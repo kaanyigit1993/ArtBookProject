@@ -33,6 +33,7 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
             let context = appDelegate.persistentContainer.viewContext
             
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Paintings")
+            
             let idString = chosenPaintingId?.uuidString
             fetchRequest.predicate = NSPredicate(format: "id = %@", idString!)
             fetchRequest.returnsObjectsAsFaults = false
@@ -70,7 +71,7 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
             yearText.text = ""
         }
         
-        
+        //Recognizers
         //textview da klavyenin kapanmaması sorununun çözümü.
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
         view.addGestureRecognizer(gestureRecognizer)
@@ -80,9 +81,13 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
         imageView.addGestureRecognizer(imageTapRecognizer)
     }
     
+    @objc func hideKeyboard() {
+        view.endEditing(true) // keyboard vs açıksa kapatması için kullanılır.
+    }
+    
     @objc func selectImage() {
         let picker = UIImagePickerController() // kullanıcının galerisine erişmek.
-        picker.delegate = self
+        picker.delegate = self //fonksiyonlarını çağırmak için delege olarak tanımlıyoruz.
         picker.sourceType = .photoLibrary
         picker.allowsEditing = true //fotoğrafı kaydederken zoomlamak yada uzaklaştırmak için gerekli.
         present(picker, animated: true, completion: nil) //şuana kadar yapılan işlemler resmi seçmek,resmi seçtikten sonra yapılacaklar aşağıda devam ediyor.
@@ -90,24 +95,24 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         imageView.image = info[.originalImage] as? UIImage
-        saveButton.isEnabled = true
-        self.dismiss(animated: true, completion: nil)
+        saveButton.isEnabled = true //resim seçildikten sonra saveButton u aktif yapmak.
+        self.dismiss(animated: true, completion: nil) //açılan picker ı kapatmak.
     }
     
     
     
     
-    @objc func hideKeyboard() {
-        view.endEditing(true)
-    }
+    
     
     @IBAction func saveButtonClicked(_ sender: Any) {
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let context = appDelegate.persistentContainer.viewContext
         
+        //context in içine ne koyulacağını söylüyoruz.
         let newPainting = NSEntityDescription.insertNewObject(forEntityName: "Paintings", into: context)
         
+        //verileri database imize aktarıyoruz.
         newPainting.setValue(nameText.text!, forKey: "name")
         newPainting.setValue(artistText.text, forKey: "artist")
         
@@ -116,6 +121,7 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
         }
         
         newPainting.setValue(UUID(), forKey: "id")
+        
         let data = imageView.image!.jpegData(compressionQuality: 0.5)
         newPainting.setValue(data, forKey: "image")
         
@@ -126,10 +132,11 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
             print("error")
         }
         
-        
+        // kayıt olan veriler için,gözlemcilere mesaj yollama olanağı sağlar.
         NotificationCenter.default.post(name: NSNotification.Name("newData"), object: nil)
-        
-        self.navigationController?.popViewController(animated: true) //tıkladıktan sonra bir önce ki sayfaya geçiş
+
+        //save dedikten sonra bir önce ki sayfaya geri gitmesini sağlar.
+        self.navigationController?.popViewController(animated: true)
     }
     
   

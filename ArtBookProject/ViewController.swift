@@ -27,16 +27,22 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         tableView.delegate = self
         tableView.dataSource = self
         
+        //sağ üstte ki +(buton) tuşunu eklemek.
         navigationController?.navigationBar.topItem?.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.add, target: self, action: #selector(addButtonClicked))
         
         getData()
+    }
+    
+    @objc func addButtonClicked () {
+        selectedPainting = ""
+        performSegue(withIdentifier: "toDetailsVC", sender: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         NotificationCenter.default.addObserver(self, selector: #selector(getData), name: NSNotification.Name(rawValue: "newData"), object: nil)
     }
     
-    
+    //CoreData dan verileri çekmek.
     @objc func getData() {
         nameArray.removeAll(keepingCapacity: false)
         idArray.removeAll(keepingCapacity: false)
@@ -46,7 +52,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         
         
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Paintings")
-        fetchRequest.returnsObjectsAsFaults = false
+        fetchRequest.returnsObjectsAsFaults = false //Verimli okuma işlemini sağlar, büyük verileri sağlarken bu işlemi kullanmak önemli.
         
         do {
             let results = try context.fetch(fetchRequest)
@@ -58,7 +64,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
                     if let id = result.value(forKey: "id") as? UUID {
                         self.idArray.append(id)
                     }
-                    
+                    //tableView a yeni veri eklendiği için yenileyerek, eklenen verileri görebilelim.
                     self.tableView.reloadData()
                 }
             }
@@ -69,10 +75,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         
     }
     
-    @objc func addButtonClicked () {
-        selectedPainting = ""
-        performSegue(withIdentifier: "toDetailsVC", sender: nil)
-    }
+   
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return nameArray.count
@@ -84,6 +87,16 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         return cell
     }
     
+    
+    //seçili satırda ki veriyi tanımlamış olduğumuz değişkene tanımlarız. ve tıklanınca DetailsVC ye geçiş sağlanır.
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedPainting = nameArray[indexPath.row]
+        selectedPaintingId = idArray[indexPath.row]
+        performSegue(withIdentifier: "toDetailsVC", sender: nil)
+    }
+    
+    //DetailsVC içinde tanımlanmış olan değişkene erişilir ve prepareSegue de yaratılmış olan değişkene aktarılan veri
+    //geçiş yapılan VC de ki değişkene aktarılır.
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toDetailsVC" {
             let destinationVC = segue.destination as! DetailsVC
@@ -92,13 +105,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         }
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        selectedPainting = nameArray[indexPath.row]
-        selectedPaintingId = idArray[indexPath.row]
-        performSegue(withIdentifier: "toDetailsVC", sender: nil)
-    }
-    
-    
+    //silme işlemi
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let appDelegate = UIApplication.shared.delegate as! AppDelegate
