@@ -26,7 +26,7 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
         super.viewDidLoad()
         
         if chosenPainting != "" {
-            
+            imageView.isUserInteractionEnabled = false
             saveButton.isHidden = true
             
             let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -35,7 +35,7 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Paintings")
             
             let idString = chosenPaintingId?.uuidString
-            fetchRequest.predicate = NSPredicate(format: "id = %@", idString!)
+            fetchRequest.predicate = NSPredicate(format: "id = %@", idString!) //id si idString argumanına eşit olanı getir.
             fetchRequest.returnsObjectsAsFaults = false
             
             do {
@@ -64,6 +64,7 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
             
             
         }else {
+            imageView.isUserInteractionEnabled = true
             saveButton.isHidden = false
             saveButton.isEnabled = false
             nameText.text = ""
@@ -76,7 +77,7 @@ class DetailsVC: UIViewController, UIImagePickerControllerDelegate, UINavigation
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
         view.addGestureRecognizer(gestureRecognizer)
         
-        imageView.isUserInteractionEnabled = true
+        
         let imageTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(selectImage))
         imageView.addGestureRecognizer(imageTapRecognizer)
     }
